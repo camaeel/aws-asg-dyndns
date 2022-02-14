@@ -1,3 +1,4 @@
+# Lambda function role
 resource "aws_iam_role" "aws-asg-dyndns" {
   name = "${var.name}-role"
 
@@ -87,6 +88,36 @@ EOF
   ) 
 }
 
+#EC2 
+
+resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-ec2-read" {
+  role       = aws_iam_role.aws-asg-dyndns.name
+  policy_arn = aws_iam_policy.aws-asg-dyndns-ec2-read.arn
+}
+
+resource "aws_iam_policy" "aws-asg-dyndns-ec2-read" {
+  name = "${var.name}-ec2-read"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:DescribeNetworkInterfaces"
+          ],
+          "Resource": "*"
+        }
+    ]
+}
+EOF
+
+  tags = merge(
+    var.tags,
+    { Name = "${var.name}-ec2-read" }
+  ) 
+}
 
 ######################## Role for writing the queue for asg lifecycyle hook
 resource "aws_iam_role" "aws-asg-dyndns-sqs-writer" {
