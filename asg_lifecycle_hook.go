@@ -50,9 +50,10 @@ func (obj *LifecycleMessage) UnmarshalJSON(data []byte) error {
 	obj.Time = temp.Time
 	obj.EC2InstanceId = temp.EC2InstanceId
 	obj.LifecycleActionToken = temp.LifecycleActionToken
-	if err := json.Unmarshal([]byte(temp.NotificationMetadataRaw), &obj.NotificationMetadata); err != nil {
-		return err
+	if temp.NotificationMetadataRaw != "" {
+		if err := json.Unmarshal([]byte(temp.NotificationMetadataRaw), &obj.NotificationMetadata); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
