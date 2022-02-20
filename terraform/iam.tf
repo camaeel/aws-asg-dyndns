@@ -90,13 +90,13 @@ EOF
 
 #EC2 
 
-resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-ec2-read" {
+resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-ec2-access" {
   role       = aws_iam_role.aws-asg-dyndns.name
-  policy_arn = aws_iam_policy.aws-asg-dyndns-ec2-read.arn
+  policy_arn = aws_iam_policy.aws-asg-dyndns-ec2-access.arn
 }
 
-resource "aws_iam_policy" "aws-asg-dyndns-ec2-read" {
-  name = "${var.name}-ec2-read"
+resource "aws_iam_policy" "aws-asg-dyndns-ec2-access" {
+  name = "${var.name}-ec2-access"
 
   policy = <<EOF
 {
@@ -107,8 +107,28 @@ resource "aws_iam_policy" "aws-asg-dyndns-ec2-read" {
           "Action": [
             "ec2:DescribeNetworkInterfaces"
           ],
+          "Resource": "*"         
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:CreateTags"          
+          ],
+          "Resource": "*",
+          "Condition": {
+            "StringEquals": {
+                "ec2:ResourceTag/aws-asg-dynds": "aws-asg-dynds"
+            }
+          }          
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+
+            "ec2:DescribeTags"
+          ],
           "Resource": "*"
-        }
+        }       
     ]
 }
 EOF
@@ -116,6 +136,40 @@ EOF
   tags = merge(
     var.tags,
     { Name = "${var.name}-ec2-read" }
+  ) 
+}
+
+resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-asg-lifecycle" {
+  role       = aws_iam_role.aws-asg-dyndns.name
+  policy_arn = aws_iam_policy.aws-asg-dyndns-asg-lifecycle.arn
+}
+
+resource "aws_iam_policy" "aws-asg-dyndns-asg-lifecycle" {
+  name = "${var.name}-asg-lifecycle"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "autoscaling:CompleteLifecycleAction"
+          ],
+          "Resource": "*",
+          "Condition": {
+              "StringEquals": {
+                  "autoscaling:ResourceTag/aws-asg-dynds": "aws-asg-dynds"
+              }
+          }          
+        }
+    ]
+}
+EOF
+
+  tags = merge(
+    var.tags,
+    { Name = "${var.name}-asg-lifecycle" }
   ) 
 }
 

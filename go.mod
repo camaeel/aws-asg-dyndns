@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/aws/aws-lambda-go v1.28.0
 	github.com/aws/aws-sdk-go-v2/config v1.13.1
+	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.29.0
 	github.com/stretchr/testify v1.6.1
 )
