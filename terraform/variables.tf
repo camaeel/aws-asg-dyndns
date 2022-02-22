@@ -31,9 +31,18 @@ variable "dns_provider" {
   type = string
   description = "Name of dns provider. Possible values: cloudflare"
   default = "cloudflare"
+
+  validation {   
+    condition     = can(regex("^(cloudflare)$", var.dns_provider))    
+    error_message = "Valid values are: cloudflare."  
+  }
 }
 
 variable "zone_name" {
   type = string
   description = "Zone name"
+  validation {   
+    condition     = can(regex("^[a-z0-9-_.]+$", var.zone_name))    
+    error_message = "Should be a valid dns name."  
+  }
 }

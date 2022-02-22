@@ -174,16 +174,14 @@ EOF
 }
 
 # SSM Parameter Store
-
 resource "aws_iam_role_policy_attachment" "lambda-ssm-paramter-store" {
   role       = aws_iam_role.lambda.name
-  policy_arn = aws_iam_policy.lambda-ssm-paramter-store[count.index].arn
+  policy_arn = aws_iam_policy.lambda-ssm-paramter-store.arn
   count      = var.zone_name != "" ? 1 : 0
 }
 
 resource "aws_iam_policy" "lambda-ssm-paramter-store" {
   name  = "${var.name}-ssm-paramter-store"
-  count = var.zone_name != "" ? 1 : 0
 
   policy = <<EOF
 {
@@ -201,7 +199,7 @@ resource "aws_iam_policy" "lambda-ssm-paramter-store" {
           "Action": [
             "ssm:GetParameters"
           ],
-          "Resource": "${aws_ssm_parameter.cloudflare-token[count.index].arn}" 
+          "Resource": "${aws_ssm_parameter.zone-provider.arn}" 
         }
     ]
 }
@@ -210,6 +208,38 @@ EOF
   tags = merge(
     var.tags,
     { Name = "${var.name}-ssm-paramter-store" }
+  ) 
+}
+
+
+resource "aws_iam_role_policy_attachment" "lambda-ssm-paramter-store-cloudflare" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-ssm-paramter-store-cloudflare[count.index].arn
+  count      = var.zone_name != "" ? 1 : 0
+}
+
+resource "aws_iam_policy" "lambda-ssm-paramter-store-cloudflare" {
+  name  = "${var.name}-ssm-paramter-store-cloudflare"
+  count = var.dns_provider == "cloudflare" ? 1 : 0
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ssm:GetParameters"
+          ],
+          "Resource": "${aws_ssm_parameter.cloudflare-token[count.index].arn}" 
+        }
+    ]
+}
+EOF
+
+  tags = merge(
+    var.tags,
+    { Name = "${var.name}-ssm-paramter-store-cloudflare" }
   ) 
 }
 
