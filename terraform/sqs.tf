@@ -1,4 +1,4 @@
-resource "aws_sqs_queue" "aws-asg-dyndns-events" {
+resource "aws_sqs_queue" "events" {
   name                      = "${var.name}-events"
   delay_seconds             = 0 # default
   max_message_size          = 2048
@@ -15,8 +15,8 @@ resource "aws_sqs_queue" "aws-asg-dyndns-events" {
   ) 
 }
 
-resource "aws_sqs_queue_policy" "aws-asg-dyndns-events" {
-  queue_url = aws_sqs_queue.aws-asg-dyndns-events.id
+resource "aws_sqs_queue_policy" "events" {
+  queue_url = aws_sqs_queue.events.id
 
   policy = <<POLICY
 {
@@ -28,7 +28,7 @@ resource "aws_sqs_queue_policy" "aws-asg-dyndns-events" {
             "Service": ["autoscaling.amazonaws.com", "sqs.amazonaws.com"]
         },
         "Action": "sqs:SendMessage",
-        "Resource": ["${aws_sqs_queue.aws-asg-dyndns-events.arn}"]
+        "Resource": ["${aws_sqs_queue.events.arn}"]
     }]
 }
 POLICY

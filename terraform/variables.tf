@@ -26,3 +26,14 @@ variable "sqs_kms_key_id" {
   description = "Sqs queue encryption key. If left as null, SSE-SQS key is used"
   default = null
 }
+
+variable "dns_provider" {
+  type = string
+  description = "Name of dns provider. Possible values: cloudflare"
+  default = "cloudflare"
+}
+
+variable "zone_name" {
+  type = string
+  description = "Zone name"
+}

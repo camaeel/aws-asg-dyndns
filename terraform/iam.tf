@@ -1,5 +1,5 @@
 # Lambda function role
-resource "aws_iam_role" "aws-asg-dyndns" {
+resource "aws_iam_role" "lambda" {
   name = "${var.name}-role"
 
   assume_role_policy = <<EOF
@@ -25,12 +25,12 @@ EOF
 }
 
 # Logs
-resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-logs" {
-  role       = aws_iam_role.aws-asg-dyndns.name
-  policy_arn = aws_iam_policy.aws-asg-dyndns-logs.arn
+resource "aws_iam_role_policy_attachment" "lambda-logs" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-logs.arn
 }
 
-resource "aws_iam_policy" "aws-asg-dyndns-logs" {
+resource "aws_iam_policy" "lambda-logs" {
   name = "${var.name}-logs"
 
   policy = <<EOF
@@ -57,12 +57,12 @@ EOF
 }
 
 # SQS
-resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-sqs" {
-  role       = aws_iam_role.aws-asg-dyndns.name
-  policy_arn = aws_iam_policy.aws-asg-dyndns-sqs.arn
+resource "aws_iam_role_policy_attachment" "lambda-sqs" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-sqs.arn
 }
 
-resource "aws_iam_policy" "aws-asg-dyndns-sqs" {
+resource "aws_iam_policy" "lambda-sqs" {
   name = "${var.name}-sqs"
 
   policy = <<EOF
@@ -76,7 +76,7 @@ resource "aws_iam_policy" "aws-asg-dyndns-sqs" {
             "sqs:DeleteMessage",
             "sqs:GetQueueAttributes"
           ],
-          "Resource": "${aws_sqs_queue.aws-asg-dyndns-events.arn}" 
+          "Resource": "${aws_sqs_queue.events.arn}" 
         }
     ]
 }
@@ -90,12 +90,12 @@ EOF
 
 #EC2 
 
-resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-ec2-access" {
-  role       = aws_iam_role.aws-asg-dyndns.name
-  policy_arn = aws_iam_policy.aws-asg-dyndns-ec2-access.arn
+resource "aws_iam_role_policy_attachment" "lambda-ec2-access" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-ec2-access.arn
 }
 
-resource "aws_iam_policy" "aws-asg-dyndns-ec2-access" {
+resource "aws_iam_policy" "lambda-ec2-access" {
   name = "${var.name}-ec2-access"
 
   policy = <<EOF
@@ -139,12 +139,12 @@ EOF
   ) 
 }
 
-resource "aws_iam_role_policy_attachment" "aws-asg-dyndns-asg-lifecycle" {
-  role       = aws_iam_role.aws-asg-dyndns.name
-  policy_arn = aws_iam_policy.aws-asg-dyndns-asg-lifecycle.arn
+resource "aws_iam_role_policy_attachment" "lambda-asg-lifecycle" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-asg-lifecycle.arn
 }
 
-resource "aws_iam_policy" "aws-asg-dyndns-asg-lifecycle" {
+resource "aws_iam_policy" "lambda-asg-lifecycle" {
   name = "${var.name}-asg-lifecycle"
 
   policy = <<EOF
@@ -170,6 +170,46 @@ EOF
   tags = merge(
     var.tags,
     { Name = "${var.name}-asg-lifecycle" }
+  ) 
+}
+
+# SSM Parameter Store
+
+resource "aws_iam_role_policy_attachment" "lambda-ssm-paramter-store" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda-ssm-paramter-store[count.index].arn
+  count      = var.zone_name != "" ? 1 : 0
+}
+
+resource "aws_iam_policy" "lambda-ssm-paramter-store" {
+  name  = "${var.name}-ssm-paramter-store"
+  count = var.zone_name != "" ? 1 : 0
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ssm:DescribeParameters"
+          ],
+          "Resource": "*" 
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ssm:GetParameters"
+          ],
+          "Resource": "${aws_ssm_parameter.cloudflare-token[count.index].arn}" 
+        }
+    ]
+}
+EOF
+
+  tags = merge(
+    var.tags,
+    { Name = "${var.name}-ssm-paramter-store" }
   ) 
 }
 
@@ -218,7 +258,7 @@ resource "aws_iam_policy" "aws-asg-dyndns-sqs-writer" {
             "sqs:SendMessage",
             "sqs:GetQueueUrl"
           ],
-          "Resource": "${aws_sqs_queue.aws-asg-dyndns-events.arn}" 
+          "Resource": "${aws_sqs_queue.events.arn}" 
         }
     ]
 }

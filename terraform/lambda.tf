@@ -1,7 +1,7 @@
-resource "aws_lambda_function" "aws-asg-dyndns" {
+resource "aws_lambda_function" "lambda" {
   filename      = "${path.module}/../main.zip"
   function_name = var.name
-  role          = aws_iam_role.aws-asg-dyndns.arn
+  role          = aws_iam_role.lambda.arn
   handler       = "main"
 
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
@@ -23,11 +23,11 @@ resource "aws_lambda_function" "aws-asg-dyndns" {
   # TODO publish function
 }
 
-resource "aws_lambda_event_source_mapping" "aws-asg-dyndns-sqs" {
-  event_source_arn = aws_sqs_queue.aws-asg-dyndns-events.arn
-  function_name    = aws_lambda_function.aws-asg-dyndns.arn
+resource "aws_lambda_event_source_mapping" "lambda-sqs" {
+  event_source_arn = aws_sqs_queue.events.arn
+  function_name    = aws_lambda_function.lambda.arn
 
   depends_on = [
-    aws_iam_role_policy_attachment.aws-asg-dyndns-sqs
+    aws_iam_role_policy_attachment.lambda-sqs
   ]
 }

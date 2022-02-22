@@ -1,5 +1,5 @@
 output "sqs_arn" {
-  value = aws_sqs_queue.aws-asg-dyndns-events.arn
+  value = aws_sqs_queue.events.arn
 }
 
 output "sqs_writer_role_arn" {
