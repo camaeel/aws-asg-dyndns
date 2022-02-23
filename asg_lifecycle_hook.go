@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 )
 
 type LifecycleMessage struct {
@@ -56,4 +59,18 @@ func (obj *LifecycleMessage) UnmarshalJSON(data []byte) error {
 		}
 	}
 	return nil
+}
+
+func completeLifecycleHook(ctx context.Context, client *autoscaling.Client, message LifecycleMessage) error {
+	var actionResult string = "CONTINUE"
+	var input autoscaling.CompleteLifecycleActionInput = autoscaling.CompleteLifecycleActionInput{
+		AutoScalingGroupName:  &message.AutoScalingGroupName,
+		LifecycleHookName:     &message.LifecycleHookName,
+		LifecycleActionResult: &actionResult,
+		LifecycleActionToken:  &message.LifecycleActionToken,
+	}
+
+	_, err := client.CompleteLifecycleAction(ctx, &input)
+
+	return err
 }
