@@ -8,15 +8,12 @@ import (
 
 // Adds IP address to DNS entry
 func DnsEntryAddIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip *string) error {
-
-	zone := zoneDetect(domain)
-
 	dnsProviderName, err := dnsDetect()
 	if err != nil {
 		return err
 	}
 
-	dnsProvider, err := createDnsProvider(ctx, ssmClient, dnsProviderName, zone)
+	dnsProvider, err := createDnsProvider(ctx, ssmClient, dnsProviderName, domain)
 	if err != nil {
 		return err
 	}
@@ -26,7 +23,6 @@ func DnsEntryAddIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip
 
 // Removes IP address from DNS entry
 func DnsEntryRemoveIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip *string) error {
-
 	dnsProviderName, err := dnsDetect()
 	if err != nil {
 		return err
@@ -44,8 +40,4 @@ func dnsDetect() (string, error) {
 	// TODO implement logic
 	// Detect from /dyn-dns/ZONE/provider
 	return "cloudflare", nil
-}
-
-func zoneDetect(domain string) string {
-	return ""
 }

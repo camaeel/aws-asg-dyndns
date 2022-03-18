@@ -197,7 +197,7 @@ resource "aws_iam_policy" "lambda-ssm-paramter-store" {
         {
           "Effect": "Allow",
           "Action": [
-            "ssm:GetParameters"
+            "ssm:GetParameter"
           ],
           "Resource": "${aws_ssm_parameter.zone-provider.arn}" 
         }
@@ -229,7 +229,7 @@ resource "aws_iam_policy" "lambda-ssm-paramter-store-cloudflare" {
         {
           "Effect": "Allow",
           "Action": [
-            "ssm:GetParameters"
+            "ssm:GetParameter"
           ],
           "Resource": "${aws_ssm_parameter.cloudflare-token[count.index].arn}" 
         }

@@ -89,7 +89,6 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 			}
 		}
 
-		// TODO: handle cloudflare add
 		err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
 		if err != nil {
 			log.Fatal("Error! Can't complete lifecyle hook. ", err)

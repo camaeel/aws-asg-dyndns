@@ -7,16 +7,16 @@ import (
 )
 
 func GetSSMParameterValue(ctx context.Context, ssmClient *ssm.Client, parameterName string) (string, error) {
-	input := ssm.GetParametersInput{
+	input := ssm.GetParameterInput{
 		WithDecryption: true,
-		Names:          []string{},
+		Name:           &parameterName,
 	}
 
-	output, err := ssmClient.GetParameters(ctx, &input)
+	output, err := ssmClient.GetParameter(ctx, &input)
 	if err != nil {
 		return "", err
 	}
-	ret := *output.Parameters[0].Value
+	ret := *output.Parameter.Value
 
 	return ret, err
 }
