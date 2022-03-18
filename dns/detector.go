@@ -1,33 +1,51 @@
 package dns
 
-import "github.com/aws/aws-sdk-go-v2/service/ssm"
+import (
+	"context"
 
-type DnsProvider interface {
-	dnsEntryAddIp(domain string, ip *string) error
-	dnsEntryRemoveIp(domain string, ip *string) error
-}
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
+)
 
 // Adds IP address to DNS entry
-func DnsEntryAddIp(ssmClient *ssm.Client, domain string, ip *string) error {
+func DnsEntryAddIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip *string) error {
 
-	dnsProvider, err := dnsDetect()
+	zone := zoneDetect(domain)
+
+	dnsProviderName, err := dnsDetect()
 	if err != nil {
 		return err
 	}
+
+	dnsProvider, err := createDnsProvider(ctx, ssmClient, dnsProviderName, zone)
+	if err != nil {
+		return err
+	}
+
 	return dnsProvider.dnsEntryAddIp(domain, ip)
 }
 
 // Removes IP address from DNS entry
-func DnsEntryRemoveIp(ssmClient *ssm.Client, domain string, ip *string) error {
-	dnsProvider, err := dnsDetect()
+func DnsEntryRemoveIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip *string) error {
+
+	dnsProviderName, err := dnsDetect()
 	if err != nil {
 		return err
 	}
+
+	dnsProvider, err := createDnsProvider(ctx, ssmClient, dnsProviderName, domain)
+	if err != nil {
+		return err
+	}
+
 	return dnsProvider.dnsEntryRemoveIp(domain, ip)
 }
 
-func dnsDetect() (DnsProvider, error) {
-	cf := cloudflare{}
+func dnsDetect() (string, error) {
 	// TODO implement logic
-	return cf, nil
+	// Detect from /dyn-dns/ZONE/provider
+	return "cloudflare", nil
+}
+
+func zoneDetect(domain string) string {
+	return ""
 }

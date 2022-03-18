@@ -1,4 +1,4 @@
-package main
+package awsClient
 
 import (
 	"context"
@@ -61,7 +61,7 @@ func (obj *LifecycleMessage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func completeLifecycleHook(ctx context.Context, client *autoscaling.Client, message LifecycleMessage) error {
+func CompleteLifecycleHook(ctx context.Context, client *autoscaling.Client, message LifecycleMessage) error {
 	var actionResult string = "CONTINUE"
 	var input autoscaling.CompleteLifecycleActionInput = autoscaling.CompleteLifecycleActionInput{
 		AutoScalingGroupName:  &message.AutoScalingGroupName,
