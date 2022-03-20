@@ -1,4 +1,4 @@
-package main
+package awsClient
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
-func getInstanceIps(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
+func GetInstanceIps(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
 
 	filterName := "attachment.instance-id"
 
@@ -38,7 +38,7 @@ func getInstanceIps(ctx context.Context, client *ec2.Client, instanceId string) 
 	return privateIp, publicIp, nil
 }
 
-func getInstanceIpsFromTags(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
+func GetInstanceIpsFromTags(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
 	var RESOURCE_ID string = "resource-id"
 	var KEY_STR string = "key"
 	var privateIp, publicIp *string
@@ -70,7 +70,7 @@ func getInstanceIpsFromTags(ctx context.Context, client *ec2.Client, instanceId 
 	return privateIp, publicIp, nil
 }
 
-func tagResource(ctx context.Context, client *ec2.Client, instanceId string, privateIp *string, publicIp *string) error {
+func TagEC2Instance(ctx context.Context, client *ec2.Client, instanceId string, privateIp *string, publicIp *string) error {
 	var privateIpKey string = "privateIp"
 	var publicIpKey string = "publicIp"
 	var input ec2.CreateTagsInput = ec2.CreateTagsInput{

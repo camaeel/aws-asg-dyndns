@@ -1,4 +1,4 @@
-package main
+package awsClient
 
 import (
 	"encoding/json"

@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/camaeell/aws-asg-dyndns/awsClient"
 	"github.com/camaeell/aws-asg-dyndns/dns"
 )
 
@@ -49,7 +50,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 	}
 	log.Printf("Record: %s", recordLog)
 
-	var recordBody LifecycleMessage
+	var recordBody awsClient.LifecycleMessage
 	err = json.Unmarshal([]byte(record.Body), &recordBody)
 	if err != nil {
 		log.Fatal("Error! Can't unmarshal event body", err)
@@ -63,7 +64,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 			return errors.New("body.EC2InstanceId not set")
 		}
 
-		privateIp, publicIp, err = getInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
+		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
 		if err != nil {
 			log.Fatal("Error! Can't obtain IPs", err)
 			return err
@@ -71,7 +72,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 
 		log.Printf("Instance added: %s, got IPs: privateIp: %s, publicIp: %s", recordBody.EC2InstanceId, *privateIp, *publicIp)
 
-		err = tagResource(ctx, ec2Client, recordBody.EC2InstanceId, privateIp, publicIp)
+		err = awsClient.TagEC2Instance(ctx, ec2Client, recordBody.EC2InstanceId, privateIp, publicIp)
 		if err != nil {
 			log.Fatal("Error! Can't tag IPs on instance", err)
 			return err
@@ -80,7 +81,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 
 		if recordBody.NotificationMetadata != nil && recordBody.NotificationMetadata["domainList"] != nil {
 			for i := range recordBody.NotificationMetadata["domainList"] {
-				err := dns.DnsEntryAddIp(ssmClient, recordBody.NotificationMetadata["domainList"][i], publicIp)
+				err := dns.DnsEntryAddIp(ctx, ssmClient, recordBody.NotificationMetadata["domainList"][i], publicIp)
 				if err != nil {
 					log.Printf("Error! Can't add DNS entry for ip: %s, domain: %s. %s", *publicIp, recordBody.NotificationMetadata["domainList"][i], err)
 					return err
@@ -88,8 +89,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 			}
 		}
 
-		// TODO: handle cloudflare add
-		err = completeLifecycleHook(ctx, autoscalingClient, recordBody)
+		err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
 		if err != nil {
 			log.Fatal("Error! Can't complete lifecyle hook. ", err)
 			return err
@@ -98,20 +98,21 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 		}
 
 	} else if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_TERMINATING" {
-		privateIp, publicIp, err = getInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
+		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
 		if err != nil {
 			log.Print("Warning! Can't obtain IPs from instance. Will try with tags. Err:", err)
-			privateIp, publicIp, err = getInstanceIpsFromTags(ctx, ec2Client, recordBody.EC2InstanceId)
+			privateIp, publicIp, err = awsClient.GetInstanceIpsFromTags(ctx, ec2Client, recordBody.EC2InstanceId)
 			if err != nil {
 				log.Fatal("Error! Can't get IPs from instance's tags. Err:", err)
 				return err
 			}
 		}
+
 		log.Printf("Instance removed: %s, got IPs: privateIp: %s, publicIp: %s", recordBody.EC2InstanceId, *privateIp, *publicIp)
 
 		if recordBody.NotificationMetadata != nil && recordBody.NotificationMetadata["domainList"] != nil {
 			for i := range recordBody.NotificationMetadata["domainList"] {
-				err := dns.DnsEntryRemoveIp(ssmClient, recordBody.NotificationMetadata["domainList"][i], publicIp)
+				err := dns.DnsEntryRemoveIp(ctx, ssmClient, recordBody.NotificationMetadata["domainList"][i], publicIp)
 				if err != nil {
 					log.Printf("Error! Can't remove DNS entry for ip: %s, domain: %s. %s", *publicIp, recordBody.NotificationMetadata["domainList"][i], err)
 					return err
@@ -119,7 +120,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 			}
 		}
 
-		err = completeLifecycleHook(ctx, autoscalingClient, recordBody)
+		err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
 		if err != nil {
 			log.Print("Error! Can't complete lifecyle hook. ", err)
 			return err
