@@ -18,7 +18,7 @@ func DnsEntryAddIp(ctx context.Context, ssmClient *ssm.Client, domain string, ip
 		return err
 	}
 
-	return dnsProvider.dnsEntryAddIp(domain, ip)
+	return dnsProvider.dnsEntryAddIp(ctx, domain, ip)
 }
 
 // Removes IP address from DNS entry
@@ -33,7 +33,7 @@ func DnsEntryRemoveIp(ctx context.Context, ssmClient *ssm.Client, domain string,
 		return err
 	}
 
-	return dnsProvider.dnsEntryRemoveIp(domain, ip)
+	return dnsProvider.dnsEntryRemoveIp(ctx, domain, ip)
 }
 
 func dnsDetect() (string, error) {

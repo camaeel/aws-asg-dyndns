@@ -11,6 +11,7 @@ resource "aws_lambda_function" "lambda" {
 
   runtime = "go1.x"
 
+  timeout = var.lambda_timeout
   # environment {
   # variables = {
   #    foo = "bar"

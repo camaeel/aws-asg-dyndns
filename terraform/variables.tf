@@ -46,3 +46,9 @@ variable "zone_name" {
     error_message = "Should be a valid dns name."  
   }
 }
+
+variable "lambda_timeout" {
+  type = number
+  default = 20
+  description = "Timeout for lambda function execution"
+}

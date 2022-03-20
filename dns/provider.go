@@ -8,8 +8,8 @@ import (
 )
 
 type DnsProvider interface {
-	dnsEntryAddIp(domain string, ip *string) error
-	dnsEntryRemoveIp(domain string, ip *string) error
+	dnsEntryAddIp(ctx context.Context, domain string, ip *string) error
+	dnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error
 }
 
 func createDnsProvider(ctx context.Context, ssmClient *ssm.Client, dnsProviderName string, domain string) (DnsProvider, error) {

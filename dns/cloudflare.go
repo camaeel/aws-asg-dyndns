@@ -40,7 +40,7 @@ func ssmParameterTokenPath(zone string) string {
 	return "/dyn-dns/" + zone + "/cloudflare/token"
 }
 
-func (c cloudflareProvider) dnsEntryAddIp(domain string, ip *string) error {
+func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
 	api, err := c.getApiClient()
 	if err != nil {
 		return err
@@ -50,8 +50,6 @@ func (c cloudflareProvider) dnsEntryAddIp(domain string, ip *string) error {
 	if err != nil {
 		return err
 	}
-
-	var ctx context.Context
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
@@ -75,7 +73,7 @@ func (c cloudflareProvider) dnsEntryAddIp(domain string, ip *string) error {
 	return nil
 }
 
-func (c cloudflareProvider) dnsEntryRemoveIp(domain string, ip *string) error {
+func (c cloudflareProvider) dnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
 	api, err := c.getApiClient()
 	if err != nil {
 		return err
@@ -85,8 +83,6 @@ func (c cloudflareProvider) dnsEntryRemoveIp(domain string, ip *string) error {
 	if err != nil {
 		return err
 	}
-
-	var ctx context.Context
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
