@@ -49,6 +49,6 @@ variable "zone_name" {
 
 variable "lambda_timeout" {
   type = number
-  default = 20
+  default = 10
   description = "Timeout for lambda function execution"
 }
