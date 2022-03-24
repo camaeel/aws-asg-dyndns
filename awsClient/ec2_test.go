@@ -1,6 +1,7 @@
 package awsClient
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -34,4 +35,24 @@ func TestPrivateGetInstanceIpsTest(t *testing.T) {
 	assert.Equalf(t, err, expectedErr, "Wrong err. Expected %s, got %s", expectedErr, err)
 	assert.Equalf(t, expectedPrivateIp, *privateIp, "Wrong privateIp. Expected %s, got %s", expectedPrivateIp, *privateIp)
 	assert.Equalf(t, expectedPublicIp, *publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, *publicIp)
+}
+
+func TestPrivateGetInstanceIpsErrorTest(t *testing.T) {
+
+	var expectedPrivateIp *string = nil
+	var expectedPublicIp *string = nil
+	instanceId := "i-fake123"
+	var expectedErr error = fmt.Errorf("Empty Interfaces list for instance: %s", instanceId)
+
+	var fakeClient Ec2FakeClient = Ec2FakeClient{
+		DescribeNIMock: &ec2.DescribeNetworkInterfacesOutput{
+			NetworkInterfaces: []types.NetworkInterface{},
+		},
+	}
+	ctx := context.TODO()
+
+	privateIp, publicIp, err := getInstanceIps(ctx, &fakeClient, instanceId)
+	assert.Equalf(t, err, expectedErr, "Wrong err. Expected %s, got %s", expectedErr, err)
+	assert.Equalf(t, expectedPrivateIp, privateIp, "Wrong privateIp. Expected %s, got %s", expectedPrivateIp, privateIp)
+	assert.Equalf(t, expectedPublicIp, publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, publicIp)
 }
