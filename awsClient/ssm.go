@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-func GetSSMParameterValue(ctx context.Context, ssmClient *ssm.Client, parameterName string) (string, error) {
+func GetSSMParameterValue(ctx context.Context, ssmClient SSMAPI, parameterName string) (string, error) {
 	input := ssm.GetParameterInput{
 		WithDecryption: true,
 		Name:           &parameterName,

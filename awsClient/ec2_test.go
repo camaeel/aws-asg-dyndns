@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func TestPrivateGetInstanceIpsTest(t *testing.T) {
+func TestPrivateGetInstanceIps(t *testing.T) {
 
 	expectedPrivateIp := "192.168.199.99"
 	expectedPublicIp := "99.100.101.102"
@@ -37,7 +37,7 @@ func TestPrivateGetInstanceIpsTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, *publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, *publicIp)
 }
 
-func TestPrivateGetInstanceIpsErrorTest(t *testing.T) {
+func TestPrivateGetInstanceIpsError(t *testing.T) {
 
 	var expectedPrivateIp *string = nil
 	var expectedPublicIp *string = nil
@@ -57,7 +57,7 @@ func TestPrivateGetInstanceIpsErrorTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, publicIp)
 }
 
-func TestPrivateGetInstanceIpsFromTagsTest(t *testing.T) {
+func TestPrivateGetInstanceIpsFromTags(t *testing.T) {
 
 	expectedPrivateIp := "192.168.199.99"
 	expectedPublicIp := "99.100.101.102"
@@ -91,7 +91,7 @@ func TestPrivateGetInstanceIpsFromTagsTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, *publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, *publicIp)
 }
 
-func TestPrivateGetInstanceIpsFromTagsErrorTest(t *testing.T) {
+func TestPrivateGetInstanceIpsFromTagsError(t *testing.T) {
 
 	var expectedPrivateIp *string = nil
 	var expectedPublicIp *string = nil
@@ -109,7 +109,7 @@ func TestPrivateGetInstanceIpsFromTagsErrorTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, publicIp)
 }
 
-func TestGetInstanceIpsPositiveTest(t *testing.T) {
+func TestGetInstanceIpsPositive(t *testing.T) {
 
 	expectedPrivateIp := "192.168.199.99"
 	expectedPublicIp := "99.100.101.102"
@@ -136,7 +136,7 @@ func TestGetInstanceIpsPositiveTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, *publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, *publicIp)
 }
 
-func TestGetInstanceIpsErrTest(t *testing.T) {
+func TestGetInstanceIpsErr(t *testing.T) {
 	var expectedPrivateIp *string = nil
 	var expectedPublicIp *string = nil
 	instanceId := "i-fake123"
@@ -155,7 +155,7 @@ func TestGetInstanceIpsErrTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, publicIp)
 }
 
-func TestGetInstanceIpsFromTagsPositiveTest(t *testing.T) {
+func TestGetInstanceIpsFromTagsPositive(t *testing.T) {
 
 	expectedPrivateIp := "192.168.199.99"
 	expectedPublicIp := "99.100.101.102"
@@ -191,7 +191,7 @@ func TestGetInstanceIpsFromTagsPositiveTest(t *testing.T) {
 	assert.Equalf(t, expectedPublicIp, *publicIp, "Wrong publicIp. Expected %s, got %s", expectedPublicIp, *publicIp)
 }
 
-func TestGetInstanceIpsFromTagsNegativeTest(t *testing.T) {
+func TestGetInstanceIpsFromTagsNegative(t *testing.T) {
 
 	var expectedPrivateIp *string = nil
 	var expectedPublicIp *string = nil
