@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
-func GetInstanceIps(ctx context.Context, client *ec2.Client, instanceId string, checkTags bool) (*string, *string, error) {
+func GetInstanceIps(ctx context.Context, client EC2API, instanceId string, checkTags bool) (*string, *string, error) {
 	privateIp, publicIp, err := getInstanceIps(ctx, client, instanceId)
 	if err != nil {
 		if checkTags == true {
