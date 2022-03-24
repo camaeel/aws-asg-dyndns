@@ -9,7 +9,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
-func GetInstanceIps(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
+func GetInstanceIps(ctx context.Context, client *ec2.Client, instanceId string, checkTags bool) (*string, *string, error) {
+	privateIp, publicIp, err := getInstanceIps(ctx, client, instanceId)
+	if err != nil {
+		if checkTags == true {
+			log.Print("Warning! Can't obtain IPs from instance. Will try with tags. Err:", err)
+			privateIp, publicIp, err = getInstanceIpsFromTags(ctx, client, instanceId)
+			if err != nil {
+				log.Fatal("Error! Can't get IPs from instance's tags. Err:", err)
+				return nil, nil, err
+			}
+		}
+	}
+	return privateIp, publicIp, err
+}
+
+func getInstanceIps(ctx context.Context, client EC2API, instanceId string) (*string, *string, error) {
 
 	filterName := "attachment.instance-id"
 
@@ -38,7 +53,7 @@ func GetInstanceIps(ctx context.Context, client *ec2.Client, instanceId string) 
 	return privateIp, publicIp, nil
 }
 
-func GetInstanceIpsFromTags(ctx context.Context, client *ec2.Client, instanceId string) (*string, *string, error) {
+func getInstanceIpsFromTags(ctx context.Context, client EC2API, instanceId string) (*string, *string, error) {
 	var RESOURCE_ID string = "resource-id"
 	var KEY_STR string = "key"
 	var privateIp, publicIp *string
@@ -70,7 +85,7 @@ func GetInstanceIpsFromTags(ctx context.Context, client *ec2.Client, instanceId 
 	return privateIp, publicIp, nil
 }
 
-func TagEC2Instance(ctx context.Context, client *ec2.Client, instanceId string, privateIp *string, publicIp *string) error {
+func TagEC2Instance(ctx context.Context, client EC2API, instanceId string, privateIp *string, publicIp *string) error {
 	var privateIpKey string = "privateIp"
 	var publicIpKey string = "publicIp"
 	var input ec2.CreateTagsInput = ec2.CreateTagsInput{

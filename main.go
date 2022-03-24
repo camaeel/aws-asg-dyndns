@@ -64,7 +64,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 			return errors.New("body.EC2InstanceId not set")
 		}
 
-		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
+		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId, false)
 		if err != nil {
 			log.Fatal("Error! Can't obtain IPs", err)
 			return err
@@ -98,14 +98,10 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 		}
 
 	} else if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_TERMINATING" {
-		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId)
+		privateIp, publicIp, err = awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId, true)
 		if err != nil {
-			log.Print("Warning! Can't obtain IPs from instance. Will try with tags. Err:", err)
-			privateIp, publicIp, err = awsClient.GetInstanceIpsFromTags(ctx, ec2Client, recordBody.EC2InstanceId)
-			if err != nil {
-				log.Fatal("Error! Can't get IPs from instance's tags. Err:", err)
-				return err
-			}
+			log.Fatal("Error! Can't tag IPs on instance", err)
+			return err
 		}
 
 		log.Printf("Instance removed: %s, got IPs: privateIp: %s, publicIp: %s", recordBody.EC2InstanceId, *privateIp, *publicIp)
