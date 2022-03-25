@@ -61,7 +61,7 @@ func (obj *LifecycleMessage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func CompleteLifecycleHook(ctx context.Context, client *autoscaling.Client, message LifecycleMessage) error {
+func CompleteLifecycleHook(ctx context.Context, client AUTOSCALINGAPI, message LifecycleMessage) error {
 	var actionResult string = "CONTINUE"
 	var input autoscaling.CompleteLifecycleActionInput = autoscaling.CompleteLifecycleActionInput{
 		AutoScalingGroupName:  &message.AutoScalingGroupName,
