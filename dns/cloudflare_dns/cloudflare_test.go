@@ -1,4 +1,4 @@
-package dns
+package cloudflare_dns
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func TestNewCloudflareProvider(t *testing.T) {
 		},
 	}
 
-	provider, err := newCloudflareProvider(ctx, &fakeSSMClient, domain)
+	provider, err := NewCloudflareProvider(ctx, &fakeSSMClient, domain)
 
 	assert.Equalf(t, expectedToken, provider.token, "Token %s not equal to expected value %s", provider.token, expectedToken)
 	assert.Equalf(t, expectedZone, provider.zone, "Zone %s not equal to expected value %s", provider.zone, expectedZone)

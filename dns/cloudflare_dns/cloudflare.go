@@ -1,4 +1,4 @@
-package dns
+package cloudflare_dns
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type cloudflareProvider struct {
 	zone  string
 }
 
-func newCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, domain string) (*cloudflareProvider, error) {
+func NewCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, domain string) (*cloudflareProvider, error) {
 	ret := cloudflareProvider{}
 	ret.detectZone(domain)
 	token, err := awsClient.GetSSMParameterValue(ctx, ssmClient, ssmParameterTokenPath(ret.zone))
@@ -39,7 +39,7 @@ func ssmParameterTokenPath(zone string) string {
 	return fmt.Sprintf("/dyn-dns/%s/cloudflare/token", zone)
 }
 
-func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
+func (c cloudflareProvider) DnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
 	api, err := c.getApiClient()
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip
 	return nil
 }
 
-func (c cloudflareProvider) dnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
+func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
 	api, err := c.getApiClient()
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func (c cloudflareProvider) dnsEntryRemoveIp(ctx context.Context, domain string,
 	return nil
 }
 
-func (c cloudflareProvider) getApiClient() (*cloudflare.API, error) {
+func (c cloudflareProvider) getApiClient() (CLOUDFLAREAPI, error) {
 	api, err := cloudflare.NewWithAPIToken(c.token)
 	return api, err
 
