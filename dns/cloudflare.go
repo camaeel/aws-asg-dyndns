@@ -6,7 +6,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/camaeell/aws-asg-dyndns/awsClient"
 	"github.com/cloudflare/cloudflare-go"
 )
@@ -16,7 +15,7 @@ type cloudflareProvider struct {
 	zone  string
 }
 
-func newCloudflareProvider(ctx context.Context, ssmClient *ssm.Client, domain string) (*cloudflareProvider, error) {
+func newCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, domain string) (*cloudflareProvider, error) {
 	ret := cloudflareProvider{}
 	ret.detectZone(domain)
 	token, err := awsClient.GetSSMParameterValue(ctx, ssmClient, ssmParameterTokenPath(ret.zone))
@@ -37,7 +36,7 @@ func (c *cloudflareProvider) detectZone(domain string) {
 }
 
 func ssmParameterTokenPath(zone string) string {
-	return "/dyn-dns/" + zone + "/cloudflare/token"
+	return fmt.Sprintf("/dyn-dns/%s/cloudflare/token", zone)
 }
 
 func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
