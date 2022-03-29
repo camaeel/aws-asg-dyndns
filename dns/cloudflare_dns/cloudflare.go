@@ -13,6 +13,7 @@ import (
 type cloudflareProvider struct {
 	token string
 	zone  string
+	api   CLOUDFLAREAPI
 }
 
 func NewCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, domain string) (*cloudflareProvider, error) {
@@ -23,6 +24,12 @@ func NewCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, doma
 		return nil, err
 	}
 	ret.token = token
+
+	api, err := cloudflare.NewWithAPIToken(ret.token)
+	if err != nil {
+		return nil, err
+	}
+	ret.api = api
 
 	return &ret, nil
 }
@@ -40,19 +47,15 @@ func ssmParameterTokenPath(zone string) string {
 }
 
 func (c cloudflareProvider) DnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
-	api, err := c.getApiClient()
-	if err != nil {
-		return err
-	}
 
-	zoneId, err := api.ZoneIDByName(c.zone)
+	zoneId, err := c.api.ZoneIDByName(c.zone)
 	if err != nil {
 		return err
 	}
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
-	dnsRecords, err := api.DNSRecords(ctx, zoneId, dnsRecordQuery)
+	dnsRecords, err := c.api.DNSRecords(ctx, zoneId, dnsRecordQuery)
 	if err != nil {
 		return err
 	}
@@ -63,7 +66,7 @@ func (c cloudflareProvider) DnsEntryAddIp(ctx context.Context, domain string, ip
 		log.Printf("Warning. DNS records already exists for %s domain and ip = %s", domain, *ip)
 	} else {
 		dnsRecord := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip, TTL: 60}
-		_, err := api.CreateDNSRecord(ctx, zoneId, dnsRecord)
+		_, err := c.api.CreateDNSRecord(ctx, zoneId, dnsRecord)
 		if err != nil {
 			return err
 		}
@@ -73,19 +76,14 @@ func (c cloudflareProvider) DnsEntryAddIp(ctx context.Context, domain string, ip
 }
 
 func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
-	api, err := c.getApiClient()
-	if err != nil {
-		return err
-	}
-
-	zoneId, err := api.ZoneIDByName(c.zone)
+	zoneId, err := c.api.ZoneIDByName(c.zone)
 	if err != nil {
 		return err
 	}
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
-	dnsRecords, err := api.DNSRecords(ctx, zoneId, dnsRecordQuery)
+	dnsRecords, err := c.api.DNSRecords(ctx, zoneId, dnsRecordQuery)
 	if err != nil {
 		return err
 	}
@@ -93,7 +91,7 @@ func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string,
 	if len(dnsRecords) > 1 {
 		return fmt.Errorf("Found too many (%d) DNS records for %s domain and %s", len(dnsRecords), domain, *ip)
 	} else if len(dnsRecords) == 1 {
-		err := api.DeleteDNSRecord(ctx, zoneId, dnsRecords[0].ID)
+		err := c.api.DeleteDNSRecord(ctx, zoneId, dnsRecords[0].ID)
 		if err != nil {
 			return err
 		}
@@ -102,10 +100,4 @@ func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string,
 	}
 
 	return nil
-}
-
-func (c cloudflareProvider) getApiClient() (CLOUDFLAREAPI, error) {
-	api, err := cloudflare.NewWithAPIToken(c.token)
-	return api, err
-
 }
