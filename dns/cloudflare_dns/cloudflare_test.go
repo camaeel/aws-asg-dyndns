@@ -6,7 +6,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
-	"github.com/camaeell/aws-asg-dyndns/awsClient"
+	awsClient_mocks "github.com/camaeell/aws-asg-dyndns/awsClient/mocks"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,16 +28,18 @@ func TestNewCloudflareProvider(t *testing.T) {
 	domain := "www.test.example.com"
 	expectedZone := "example.com"
 
-	fakeSSMClient := awsClient.SsmFakeClient{
-		GetParametersMock: &ssm.GetParameterOutput{
-			Parameter: &types.Parameter{
-				Name:  &expectedName,
-				Value: &expectedToken,
-			},
+	ctrl := gomock.NewController(t)
+	m := awsClient_mocks.NewMockSSMAPI(ctrl)
+
+	fakeSSMResponse := ssm.GetParameterOutput{
+		Parameter: &types.Parameter{
+			Name:  &expectedName,
+			Value: &expectedToken,
 		},
 	}
+	m.EXPECT().GetParameter(gomock.Any(), gomock.Any()).Return(&fakeSSMResponse, nil)
 
-	provider, err := NewCloudflareProvider(ctx, &fakeSSMClient, domain)
+	provider, err := NewCloudflareProvider(ctx, m, domain)
 
 	assert.Equalf(t, expectedToken, provider.token, "Token %s not equal to expected value %s", provider.token, expectedToken)
 	assert.Equalf(t, expectedZone, provider.zone, "Zone %s not equal to expected value %s", provider.zone, expectedZone)

@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.32.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.22.0
 	github.com/cloudflare/cloudflare-go v0.35.1
+	github.com/golang/mock v1.6.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 )

@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
+//go:generate mockgen -destination=./mocks/aws_apis_mocks.go -package=mocks github.com/camaeell/aws-asg-dyndns/awsClient EC2API,SSMAPI,AUTOSCALINGAPI
+
 type EC2API interface {
 	DescribeTags(ctx context.Context, params *ec2.DescribeTagsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeTagsOutput, error)
 	CreateTags(ctx context.Context, params *ec2.CreateTagsInput, optFns ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
