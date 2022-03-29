@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	"github.com/camaeell/aws-asg-dyndns/awsClient/mocks"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,16 +66,19 @@ func TestLifecycleMessageUnmarshal1(t *testing.T) {
 func TestCompleteLifecycleHook(t *testing.T) {
 	ctx := context.TODO()
 
-	fakeClient := AutoscalingFakeClient{
-		CompleteLifecycleActionOutput: &autoscaling.CompleteLifecycleActionOutput{},
-	}
+	ctrl := gomock.NewController(t)
+	m := mocks.NewMockAUTOSCALINGAPI(ctrl)
+
 	message := LifecycleMessage{
 		AutoScalingGroupName: "fakeAsg",
 		LifecycleHookName:    "hook1",
 		LifecycleActionToken: "token123",
 	}
 
-	err := CompleteLifecycleHook(ctx, &fakeClient, message)
+	fakeResponse := autoscaling.CompleteLifecycleActionOutput{}
+
+	m.EXPECT().CompleteLifecycleAction(gomock.Any(), gomock.Any()).Return(&fakeResponse, nil)
+	err := CompleteLifecycleHook(ctx, m, message)
 
 	assert.Nilf(t, err, "Error should be nil, got %s", err)
 }
