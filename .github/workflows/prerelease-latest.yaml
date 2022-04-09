@@ -8,9 +8,11 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-app.yml
+    uses: ./.github/workflows/build-app.yaml
+
   pre-release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  
+    needs: 
+    - build
     runs-on: ubuntu-latest
 
     steps:

@@ -7,8 +7,10 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-app.yml
-  pre-release:
+    uses: ./.github/workflows/build-app.yaml
+  release:
+    needs: 
+    - build  
     runs-on: ubuntu-latest
 
     steps:
