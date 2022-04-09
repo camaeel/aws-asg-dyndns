@@ -1,4 +1,4 @@
-name: Go
+name: Build lambda function
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         go-version: 1.18
 
     - name: Build
-      run: GOOS=linux GOARCH=amd64 go build -v -o bin/aws-asg-dyndns-linux-amd64 main.go
+      run: GOOS=linux GOARCH=amd64 go build -v -o bin/aws-asg-dyndns-${{ github.ref_name }}-linux-amd64 main.go
 
     - name: get gomock
       run: go get github.com/golang/mock/gomock 
@@ -42,5 +42,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
-        path: bin/aws-asg-dyndns-linux-amd64
+        path: bin/aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
         if-no-files-found: error
