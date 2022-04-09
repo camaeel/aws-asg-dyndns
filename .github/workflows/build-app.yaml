@@ -24,14 +24,11 @@ jobs:
     - name: Build
       run: GOOS=linux GOARCH=amd64 go build -v -o bin/aws-asg-dyndns-${{ github.ref_name }}-linux-amd64 main.go
 
-    - name: get gomock
-      run: go get github.com/golang/mock/gomock 
-
-    - name: get mockgen      
-      run: go get github.com/golang/mock/mockgen
-
-    - name: Install mockgen
-      run: go install github.com/golang/mock/mockgen
+    - name: get gomock & mockgen
+      run: |
+        go get github.com/golang/mock/gomock 
+        go get github.com/golang/mock/mockgen
+        go install github.com/golang/mock/mockgen
 
     - name: Generate mocks
       run: GOOS=linux go generate ./...
