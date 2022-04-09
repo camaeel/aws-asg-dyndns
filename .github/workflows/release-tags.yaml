@@ -21,7 +21,7 @@ jobs:
         name: aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
         path: bin/
 
-    - uses: "marvinpinto/action-automatic-releases@latest"
+    - uses: "marvinpinto/action-automatic-releases@v1.2.1"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
