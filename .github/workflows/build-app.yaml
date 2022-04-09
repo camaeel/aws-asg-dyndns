@@ -2,13 +2,13 @@ name: build
 
 on:
   push:
-    branches: 
-    - '*'
-    tags:
-    - '*'
+    branches-ignore:
+      - "master"
+      - "tests"
   pull_request:
     branches: 
     - master
+  workflow_call:
 
 jobs:
 

@@ -1,17 +1,14 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: 
-    - build
+  push:
     tags: 
     - "*"
-    types:
-      - "completed"
 
 jobs:
+  build:
+    uses: ./.github/workflows/build-app.yml
   pre-release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
