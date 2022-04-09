@@ -3,9 +3,11 @@ name: Release
 on:
   workflow_run:
     workflows: 
-    - "Build lambda function"
+    - build
     tags: 
     - "*"
+    types:
+      - "completed"
 
 jobs:
 

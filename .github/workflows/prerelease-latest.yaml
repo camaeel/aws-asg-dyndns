@@ -3,7 +3,7 @@ name: Pre release
 on:
   workflow_run:
     workflows: 
-    - "Build lambda function"
+    - build
     branches: 
     - master
     - tests
