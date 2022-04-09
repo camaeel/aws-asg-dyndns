@@ -1,0 +1,29 @@
+name: Pre release
+
+on:
+  push:
+    branches: 
+    - 'master'
+
+jobs:
+
+
+  pre-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
+        path: bin/
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Release latest"
+        files: |
+          bin/aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
