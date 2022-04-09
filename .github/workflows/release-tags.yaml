@@ -1,9 +1,11 @@
 name: Release
 
 on:
-  push:
-    tags:
-    - '*'
+  workflow_run:
+    workflows: 
+    - "Build lambda function"
+    tags: 
+    - "*"
 
 jobs:
 
