@@ -34,7 +34,7 @@ func NewCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, doma
 	return &ret, nil
 }
 
-// Temporart solution
+// Temporary solution
 // TODO Implement proper solution.
 func (c *cloudflareProvider) detectZone(domain string) {
 	splitted := strings.Split(domain, ".")
@@ -96,7 +96,7 @@ func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string,
 			return err
 		}
 	} else {
-		log.Printf("Warning. DNS records already doesn;t exist for %s domain and ip = %s", domain, *ip)
+		log.Printf("Warning. DNS records already doesn't exist for %s domain and ip = %s", domain, *ip)
 	}
 
 	return nil
