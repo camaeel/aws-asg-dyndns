@@ -59,12 +59,28 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 	log.Printf("Record body: %s", recordBody)
 
 	if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_LAUNCHING" {
-		return processInstanceLaunchRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		err = processInstanceLaunchRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		if err != nil {
+			return err
+		}
 	} else if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_TERMINATING" {
-		return processInstanceTerminateRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		err = processInstanceTerminateRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("Error! Unknown LifecycleTransition: [%s]", recordBody.LifecycleTransition)
 	}
 
-	return fmt.Errorf("Error! Unknown LifecycleTransition: [%s]", recordBody.LifecycleTransition)
+	err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
+	if err != nil {
+		log.Print("Error! Can't complete lifecyle hook. ", err)
+		return err
+	} else {
+		log.Printf("Lifecycle hook completed successful.")
+	}
+
+	return nil
 }
 
 func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient *autoscaling.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
@@ -99,14 +115,6 @@ func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, aut
 		}
 	}
 
-	err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
-	if err != nil {
-		log.Fatal("Error! Can't complete lifecyle hook. ", err)
-		return err
-	} else {
-		log.Printf("Lifecycle hook completed successful.")
-	}
-
 	return nil
 }
 
@@ -128,14 +136,6 @@ func processInstanceTerminateRecord(ctx context.Context, ec2Client *ec2.Client, 
 				return err
 			}
 		}
-	}
-
-	err = awsClient.CompleteLifecycleHook(ctx, autoscalingClient, recordBody)
-	if err != nil {
-		log.Print("Error! Can't complete lifecyle hook. ", err)
-		return err
-	} else {
-		log.Printf("Lifecycle hook completed successful.")
 	}
 
 	return nil
