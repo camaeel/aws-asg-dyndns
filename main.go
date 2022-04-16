@@ -120,6 +120,11 @@ func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, aut
 
 func processInstanceTerminateRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient *autoscaling.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
 	var privateIp, publicIp *string
+
+	if recordBody.EC2InstanceId == "" {
+		return errors.New("body.EC2InstanceId not set")
+	}
+
 	privateIp, publicIp, err := awsClient.GetInstanceIps(ctx, ec2Client, recordBody.EC2InstanceId, true)
 	if err != nil {
 		log.Fatal("Error! Can't tag IPs on instance", err)
