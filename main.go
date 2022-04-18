@@ -59,12 +59,12 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 	log.Printf("Record body: %s", recordBody)
 
 	if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_LAUNCHING" {
-		err = processInstanceLaunchRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		err = processInstanceLaunchRecord(ctx, ec2Client, ssmClient, recordBody)
 		if err != nil {
 			return err
 		}
 	} else if recordBody.LifecycleTransition == "autoscaling:EC2_INSTANCE_TERMINATING" {
-		err = processInstanceTerminateRecord(ctx, ec2Client, autoscalingClient, ssmClient, recordBody)
+		err = processInstanceTerminateRecord(ctx, ec2Client, ssmClient, recordBody)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func processRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient
 	return nil
 }
 
-func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient *autoscaling.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
+func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
 	var privateIp, publicIp *string
 
 	if recordBody.EC2InstanceId == "" {
@@ -118,7 +118,7 @@ func processInstanceLaunchRecord(ctx context.Context, ec2Client *ec2.Client, aut
 	return nil
 }
 
-func processInstanceTerminateRecord(ctx context.Context, ec2Client *ec2.Client, autoscalingClient *autoscaling.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
+func processInstanceTerminateRecord(ctx context.Context, ec2Client *ec2.Client, ssmClient *ssm.Client, recordBody awsClient.LifecycleMessage) error {
 	var privateIp, publicIp *string
 
 	if recordBody.EC2InstanceId == "" {
