@@ -32,3 +32,7 @@ variable "role_prefix_name" {
   type = string
   description = "Prefix role names"
 }
+
+variable "private_zone" {
+  type = bool
+}

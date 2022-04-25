@@ -43,6 +43,22 @@ data "aws_iam_policy_document" "lambda-ssm-parameter-store" {
     }
   }
 
+  dynamic "statement" {
+    for_each = data.aws_route53_zone.zone
+    content {
+      sid = "accessSsmRoute53Access"
+      effect = "Allow"
+      actions = [
+        "route53:ChangeResourceRecordSets",
+      ]
+
+      resources = [
+        statement.value.arn,
+      ]      
+    }
+  }
+
+
   statement {
     sid = "accessSsmZoneProvider"
     effect = "Allow"

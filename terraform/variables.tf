@@ -29,7 +29,11 @@ variable "sqs_kms_key_id" {
 
 variable "dns_providers" {
 
-  type = map(string)
+  type = map(object({
+    private_zone  = bool
+    provider_name = string
+    zone_name     = string
+  }))
 
   description = "Map zone_name => provider"
   default = {}
