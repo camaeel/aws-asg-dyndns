@@ -37,6 +37,7 @@ jobs:
       run: go test -v ./...
 
     - uses: actions/upload-artifact@v3
+      if: startsWith(github.event.push.ref, 'refs/tags/')
       with:
         name: aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
         path: bin/aws-asg-dyndns-${{ github.ref_name }}-linux-amd64
