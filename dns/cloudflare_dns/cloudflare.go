@@ -1,4 +1,4 @@
-package dns
+package cloudflare_dns
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/camaeell/aws-asg-dyndns/awsClient"
 	"github.com/cloudflare/cloudflare-go"
 )
@@ -14,9 +13,10 @@ import (
 type cloudflareProvider struct {
 	token string
 	zone  string
+	api   CLOUDFLAREAPI
 }
 
-func newCloudflareProvider(ctx context.Context, ssmClient *ssm.Client, domain string) (*cloudflareProvider, error) {
+func NewCloudflareProvider(ctx context.Context, ssmClient awsClient.SSMAPI, domain string) (*cloudflareProvider, error) {
 	ret := cloudflareProvider{}
 	ret.detectZone(domain)
 	token, err := awsClient.GetSSMParameterValue(ctx, ssmClient, ssmParameterTokenPath(ret.zone))
@@ -25,10 +25,16 @@ func newCloudflareProvider(ctx context.Context, ssmClient *ssm.Client, domain st
 	}
 	ret.token = token
 
+	api, err := cloudflare.NewWithAPIToken(ret.token)
+	if err != nil {
+		return nil, err
+	}
+	ret.api = api
+
 	return &ret, nil
 }
 
-// Temporart solution
+// Temporary solution
 // TODO Implement proper solution.
 func (c *cloudflareProvider) detectZone(domain string) {
 	splitted := strings.Split(domain, ".")
@@ -37,23 +43,19 @@ func (c *cloudflareProvider) detectZone(domain string) {
 }
 
 func ssmParameterTokenPath(zone string) string {
-	return "/dyn-dns/" + zone + "/cloudflare/token"
+	return fmt.Sprintf("/dyn-dns/%s/cloudflare/token", zone)
 }
 
-func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
-	api, err := c.getApiClient()
-	if err != nil {
-		return err
-	}
+func (c cloudflareProvider) DnsEntryAddIp(ctx context.Context, domain string, ip *string) error {
 
-	zoneId, err := api.ZoneIDByName(c.zone)
+	zoneId, err := c.api.ZoneIDByName(c.zone)
 	if err != nil {
 		return err
 	}
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
-	dnsRecords, err := api.DNSRecords(ctx, zoneId, dnsRecordQuery)
+	dnsRecords, err := c.api.DNSRecords(ctx, zoneId, dnsRecordQuery)
 	if err != nil {
 		return err
 	}
@@ -64,7 +66,7 @@ func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip
 		log.Printf("Warning. DNS records already exists for %s domain and ip = %s", domain, *ip)
 	} else {
 		dnsRecord := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip, TTL: 60}
-		_, err := api.CreateDNSRecord(ctx, zoneId, dnsRecord)
+		_, err := c.api.CreateDNSRecord(ctx, zoneId, dnsRecord)
 		if err != nil {
 			return err
 		}
@@ -73,20 +75,15 @@ func (c cloudflareProvider) dnsEntryAddIp(ctx context.Context, domain string, ip
 	return nil
 }
 
-func (c cloudflareProvider) dnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
-	api, err := c.getApiClient()
-	if err != nil {
-		return err
-	}
-
-	zoneId, err := api.ZoneIDByName(c.zone)
+func (c cloudflareProvider) DnsEntryRemoveIp(ctx context.Context, domain string, ip *string) error {
+	zoneId, err := c.api.ZoneIDByName(c.zone)
 	if err != nil {
 		return err
 	}
 
 	dnsRecordQuery := cloudflare.DNSRecord{Name: domain, Type: "A", Content: *ip}
 
-	dnsRecords, err := api.DNSRecords(ctx, zoneId, dnsRecordQuery)
+	dnsRecords, err := c.api.DNSRecords(ctx, zoneId, dnsRecordQuery)
 	if err != nil {
 		return err
 	}
@@ -94,19 +91,13 @@ func (c cloudflareProvider) dnsEntryRemoveIp(ctx context.Context, domain string,
 	if len(dnsRecords) > 1 {
 		return fmt.Errorf("Found too many (%d) DNS records for %s domain and %s", len(dnsRecords), domain, *ip)
 	} else if len(dnsRecords) == 1 {
-		err := api.DeleteDNSRecord(ctx, zoneId, dnsRecords[0].ID)
+		err := c.api.DeleteDNSRecord(ctx, zoneId, dnsRecords[0].ID)
 		if err != nil {
 			return err
 		}
 	} else {
-		log.Printf("Warning. DNS records already doesn;t exist for %s domain and ip = %s", domain, *ip)
+		log.Printf("Warning. DNS records already doesn't exist for %s domain and ip = %s", domain, *ip)
 	}
 
 	return nil
-}
-
-func (c cloudflareProvider) getApiClient() (*cloudflare.API, error) {
-	api, err := cloudflare.NewWithAPIToken(c.token)
-	return api, err
-
 }

@@ -9,8 +9,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.32.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.22.0
 	github.com/cloudflare/cloudflare-go v0.35.1
+	github.com/golang/mock v1.6.0
 	github.com/stretchr/testify v1.7.0
-	gotest.tools v2.2.0+incompatible
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 )
 
 require (
@@ -25,11 +26,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0 // indirect
 	github.com/aws/smithy-go v1.11.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect

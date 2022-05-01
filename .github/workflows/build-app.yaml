@@ -1,0 +1,44 @@
+name: build
+
+on:
+  push:
+    branches:
+    - '*'
+  pull_request:
+    branches: 
+    - master
+  workflow_call:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Build
+      run: GOOS=linux GOARCH=amd64 go build -v -o bin/aws-asg-dyndns-linux-amd64 main.go
+
+    - name: get gomock & mockgen
+      run: |
+        go get github.com/golang/mock/gomock 
+        go get github.com/golang/mock/mockgen
+        go install github.com/golang/mock/mockgen
+
+    - name: Generate mocks
+      run: GOOS=linux go generate ./...
+
+    - name: Test
+      run: go test -v ./...
+
+    - uses: actions/upload-artifact@v3
+      if: github.event_name == 'push' && github.ref_type == 'tag'
+      with:
+        name: aws-asg-dyndns-linux-amd64
+        path: bin/aws-asg-dyndns-linux-amd64
+        if-no-files-found: error

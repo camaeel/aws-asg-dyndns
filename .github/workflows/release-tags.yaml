@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: 
+    - "*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-app.yaml
+  release:
+    needs: 
+    - build  
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: aws-asg-dyndns-linux-amd64
+        path: bin/
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: bin/aws-asg-dyndns-linux-amd64
+        draft: false
+        prerelease: false

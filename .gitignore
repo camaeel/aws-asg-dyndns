@@ -50,3 +50,5 @@ override.tf.json
 # example: *tfplan*
 
 env
+
+**/mocks/*_mocks.go

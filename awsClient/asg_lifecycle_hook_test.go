@@ -1,10 +1,14 @@
 package awsClient
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	"github.com/camaeell/aws-asg-dyndns/awsClient/mocks"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +39,7 @@ func TestLifecycleMessageUnmarshal(t *testing.T) {
 
 }
 
-func TestLifecycleMessageUnmarshalTest(t *testing.T) {
+func TestLifecycleMessageUnmarshal1(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
 
 	input := "{\"AccountId\":\"123123123\",\"RequestId\":\"123123-asda-wwww-bfce-123123123\",\"AutoScalingGroupARN\":\"arn:aws:autoscaling:eu-north-1:123123:autoScalingGroup:123123-123123-123-123-123123123:autoScalingGroupName/testing\",\"AutoScalingGroupName\":\"testing\",\"Service\":\"AWS Auto Scaling\",\"Event\":\"autoscaling:TEST_NOTIFICATION\",\"Time\":\"" + (now.UTC().Format("2006-01-02T15:04:05Z07:00")) + "\"}"
@@ -57,4 +61,24 @@ func TestLifecycleMessageUnmarshalTest(t *testing.T) {
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, expected, result, "Result should have the same value as expected")
 
+}
+
+func TestCompleteLifecycleHook(t *testing.T) {
+	ctx := context.TODO()
+
+	ctrl := gomock.NewController(t)
+	m := mocks.NewMockAUTOSCALINGAPI(ctrl)
+
+	message := LifecycleMessage{
+		AutoScalingGroupName: "fakeAsg",
+		LifecycleHookName:    "hook1",
+		LifecycleActionToken: "token123",
+	}
+
+	fakeResponse := autoscaling.CompleteLifecycleActionOutput{}
+
+	m.EXPECT().CompleteLifecycleAction(gomock.Any(), gomock.Any()).Return(&fakeResponse, nil)
+	err := CompleteLifecycleHook(ctx, m, message)
+
+	assert.Nilf(t, err, "Error should be nil, got %s", err)
 }

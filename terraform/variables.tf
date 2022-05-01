@@ -27,24 +27,16 @@ variable "sqs_kms_key_id" {
   default = null
 }
 
-variable "dns_provider" {
-  type = string
-  description = "Name of dns provider. Possible values: cloudflare"
-  default = "cloudflare"
+variable "dns_providers" {
 
-  validation {   
-    condition     = can(regex("^(cloudflare)$", var.dns_provider))    
-    error_message = "Valid values are: cloudflare."  
-  }
-}
+  type = map(object({
+    private_zone  = bool
+    provider_name = string
+    zone_name     = string
+  }))
 
-variable "zone_name" {
-  type = string
-  description = "Zone name"
-  validation {   
-    condition     = can(regex("^[a-z0-9-_.]+$", var.zone_name))    
-    error_message = "Should be a valid dns name."  
-  }
+  description = "Map zone_name => provider"
+  default = {}
 }
 
 variable "lambda_timeout" {
