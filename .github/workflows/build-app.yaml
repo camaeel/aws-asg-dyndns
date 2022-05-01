@@ -21,6 +21,14 @@ jobs:
       with:
         go-version: 1.18
 
+    - name: Cache Go modules packages
+      uses: actions/cache@v2.1.7
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
     - name: Build
       run: GOOS=linux GOARCH=amd64 go build -v -o bin/aws-asg-dyndns-linux-amd64 main.go
 
