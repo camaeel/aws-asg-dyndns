@@ -21,6 +21,9 @@ jobs:
       with:
         go-version: 1.18
 
+    - name: Install zip
+      uses: montudor/action-zip@v1        
+
     - name: Cache Go modules packages
       uses: actions/cache@v2.1.7
       with:
@@ -44,9 +47,20 @@ jobs:
     - name: Test
       run: go test -v ./...
 
+    - name: Zip output
+      run: zip -qq aws-asg-dyndns-linux-amd64.zip aws-asg-dyndns-linux-amd64
+      working-directory: bin/
+
+    - name: Checksums
+      run: |
+        for f in *; do
+          sha256sum $f | cut -d ' ' -f 1 > $f.sha256
+        done
+      working-directory: bin/
+
     - uses: actions/upload-artifact@v3
       if: github.event_name == 'push' && github.ref_type == 'tag'
       with:
-        name: aws-asg-dyndns-linux-amd64
-        path: bin/aws-asg-dyndns-linux-amd64
+        name: aws-asg-dyndns-binaries
+        path: bin/aws-asg-dyndns-linux-amd64*
         if-no-files-found: error
