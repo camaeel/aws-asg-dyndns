@@ -1,13 +1,27 @@
+resource "null_resource" "lambda_zip_download" {
+  count = local.download_from_github ? 1 : 0
+  triggers = {
+    on_version_change = "${var.github_lambda_version}"
+  }
+
+  provisioner "local-exec" {
+    command = "curl -o main.zip ${local.download_from_github_url}"
+  }
+}
+
+data "http" "lambda_zip_sha256" {
+  count = local.download_from_github ? 1 : 0
+  url   = local.sha256_from_github_url
+}
+
+
 resource "aws_lambda_function" "lambda" {
-  filename      = "${path.module}/../main.zip"
+  filename      = local.lambda_filename 
   function_name = var.name
   role          = aws_iam_role.lambda.arn
   handler       = "main"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = filebase64sha256("${path.module}/../main.zip")
+  source_code_hash = local.download_from_github ? data.http.lambda_zip_sha256[0].body : filebase64sha256("${path.module}/../main.zip")
 
   runtime = "go1.x"
 
@@ -22,6 +36,10 @@ resource "aws_lambda_function" "lambda" {
     { Name = var.name }
   ) 
   # TODO publish function
+
+  depends_on = [
+    null_resource.lambda_zip_download
+  ]
 }
 
 resource "aws_lambda_event_source_mapping" "lambda-sqs" {

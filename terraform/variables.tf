@@ -44,3 +44,9 @@ variable "lambda_timeout" {
   default = 10
   description = "Timeout for lambda function execution"
 }
+
+variable "github_lambda_version" {
+  type = string
+  default = "pre0.0.15"
+  description = "Github lambda function version. If set to null will try to upload local zip file (from a directory one level above the module)"
+}
